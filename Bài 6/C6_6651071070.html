@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="VietAir - Đặt vé máy bay trực tuyến">
+  <title>Đặt vé máy bay VietAir</title>
+ 
+  <link rel="stylesheet" href="C6.css">
+</head>
+<body>
+
+  <div class="brand">
+    <div class="mark">✈</div>
+    <span>VietAir</span>
+  </div>
+
+  <main>
+    <section class="form-card">
+      <h1>Đặt vé máy bay VietAir</h1>
+      <form id="flightForm" action="xu_ly_ve.php" method="POST">
+
+        <!-- 1. THÔNG TIN CHUYẾN BAY -->
+        <fieldset>
+          <p class="part-title">1. Thông tin chuyến bay</p>
+
+          <div class="trip-type">
+            <label><input type="radio" name="loai_ve" value="roundtrip" checked> Khứ hồi</label>
+            <label><input type="radio" name="loai_ve" value="oneway"> Một chiều</label>
+          </div>
+
+          <div class="row">
+            <div class="field">
+              <label for="diem_di">Điểm đi</label>
+              <input type="text" name="diem_di" id="diem_di" list="danhsach_thanh_pho" placeholder="Nhập điểm đi" required>
+            </div>
+            <div class="field">
+              <label for="diem_den">Điểm đến</label>
+              <input type="text" name="diem_den" id="diem_den" list="danhsach_thanh_pho" placeholder="Nhập điểm đến" required>
+            </div>
+          </div>
+          <datalist id="danhsach_thanh_pho">
+            <option value="Hà Nội – HAN">
+            <option value="TP. Hồ Chí Minh – SGN">
+            <option value="Đà Nẵng – DAD">
+            <option value="Nha Trang – CXR">
+            <option value="Phú Quốc – PQC">
+            <option value="Hải Phòng – HPH">
+            <option value="Cần Thơ – VCA">
+          </datalist>
+
+          <div class="row">
+            <div class="field">
+              <label for="ngay_di">Ngày đi</label>
+              <input type="date" name="ngay_di" id="ngay_di" required>
+            </div>
+            <div class="field">
+              <label for="ngay_ve">Ngày về</label>
+              <input type="date" name="ngay_ve" id="ngay_ve" required>
+            </div>
+          </div>
+
+          <div class="field">
+            <label for="hang_ghe">Hạng ghế</label>
+            <select name="hang_ghe" id="hang_ghe">
+              <optgroup label="Phổ thông">
+                <option value="eco_basic">Phổ thông cơ bản – 1.200.000đ</option>
+                <option value="eco_flex">Phổ thông linh hoạt – 1.800.000đ</option>
+              </optgroup>
+              <optgroup label="Thương gia">
+                <option value="biz">Thương gia – 4.500.000đ</option>
+              </optgroup>
+            </select>
+          </div>
+        </fieldset>
+
+        <!-- 2. THÔNG TIN HÀNH KHÁCH -->
+        <fieldset>
+          <p class="part-title">2. Thông tin hành khách</p>
+          <div class="row">
+            <div class="field">
+              <label for="nguoi_lon">Số hành khách người lớn (≥12 tuổi)</label>
+              <input type="number" name="nguoi_lon" id="nguoi_lon" min="1" max="9" value="1" required>
+            </div>
+            <div class="field">
+              <label for="tre_em">Số trẻ em (2-11 tuổi)</label>
+              <input type="number" name="tre_em" id="tre_em" min="0" max="9" value="0">
+            </div>
+          </div>
+          <div class="field">
+            <label for="ma_giam">Mã giảm giá</label>
+            <input type="text" name="ma_giam" id="ma_giam" placeholder="Nhập mã (SUMMER20, HOLIDAY50, NEWMEMBER)" list="ma_uu_dai">
+            <datalist id="ma_uu_dai">
+              <option value="SUMMER20">
+              <option value="NEWMEMBER">
+              <option value="HOLIDAY50">
+            </datalist>
+          </div>
+        </fieldset>
+
+        <!-- 3. KẾT QUẢ ƯỚC TÍNH -->
+        <fieldset>
+          <p class="part-title">3. Kết quả ước tính</p>
+          <div class="result-box">
+            <label for="tong_tien">Tổng tiền ước tính</label>
+            <output name="tong_tien" id="tong_tien">0 VNĐ</output>
+            <div id="discount_info" class="discount-applied"></div>
+          </div>
+        </fieldset>
+
+        <!-- 4. BẢO MẬT -->
+        <p class="part-title">4. Bảo mật giao dịch</p>
+        <div class="security-note">
+          <span class="icon">🔒</span>
+          <span>Thông tin của bạn được mã hóa bằng chuẩn SSL/TLS 256-bit trong suốt quá trình giao dịch.</span>
+        </div>
+
+        <button type="submit">✈ Tìm chuyến bay</button>
+      </form>
+    </section>
+  </main>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      const form = document.getElementById('flightForm');
+      const ngayDiInput = document.getElementById('ngay_di');
+      const ngayVeInput = document.getElementById('ngay_ve');
+      const loaiVeInputs = document.querySelectorAll('input[name="loai_ve"]');
+      const discountInfo = document.getElementById('discount_info');
+
+      // Set min date cho ngày đi
+      const today = new Date().toISOString().split('T')[0];
+      ngayDiInput.min = today;
+
+      // Ràng buộc Ngày về >= Ngày đi
+      ngayDiInput.addEventListener('change', function() {
+        ngayVeInput.min = this.value;
+        if (ngayVeInput.value && ngayVeInput.value < this.value) {
+          ngayVeInput.value = this.value;
+        }
+        tinhTien();
+      });
+
+      // Bật/tắt Ngày về
+      loaiVeInputs.forEach(radio => {
+        radio.addEventListener('change', function() {
+          if (this.value === 'oneway') {
+            ngayVeInput.disabled = true;
+            ngayVeInput.required = false;
+            ngayVeInput.value = '';
+          } else {
+            ngayVeInput.disabled = false;
+            ngayVeInput.required = true;
+          }
+          tinhTien();
+        });
+      });
+
+      // Hàm tính tiền
+      function tinhTien() {
+        const gia = { eco_basic: 1200000, eco_flex: 1800000, biz: 4500000 };
+        const hangGhe = document.getElementById('hang_ghe').value;
+        const nguoiLon = parseInt(document.getElementById('nguoi_lon').value) || 0;
+        const treEm = parseInt(document.getElementById('tre_em').value) || 0;
+        const maGiam = document.getElementById('ma_giam').value.trim().toUpperCase();
+        const isRoundTrip = document.querySelector('input[name="loai_ve"]:checked').value === 'roundtrip';
+
+        const donGia = gia[hangGhe] || 0;
+        let tong = (donGia * nguoiLon) + (donGia * treEm * 0.75);
+
+        if (isRoundTrip) {
+          tong *= 2;
+        }
+
+        let discountPercent = 0;
+        if (maGiam === 'SUMMER20') discountPercent = 0.20;
+        else if (maGiam === 'HOLIDAY50') discountPercent = 0.50;
+        else if (maGiam === 'NEWMEMBER') discountPercent = 0.10;
+
+        if (discountPercent > 0 && tong > 0) {
+          const tietKiem = tong * discountPercent;
+          tong = tong - tietKiem;
+          discountInfo.textContent = `Đã áp dụng mã giảm ${discountPercent * 100}% (Tiết kiệm ${tietKiem.toLocaleString('vi-VN')} VNĐ)`;
+        } else {
+          discountInfo.textContent = '';
+        }
+
+        document.getElementById('tong_tien').value = tong.toLocaleString('vi-VN') + ' VNĐ';
+      }
+
+      form.addEventListener('input', tinhTien);
+      tinhTien();
+    });
+  </script>
+</body>
+</html>
